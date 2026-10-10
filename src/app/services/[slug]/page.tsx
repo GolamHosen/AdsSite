@@ -11,6 +11,7 @@ import { Header } from "@/components/site/Header";
 import { ContactSection } from "@/components/site/ContactSection";
 import { Footer } from "@/components/site/Footer";
 import { CursorGlow } from "@/components/animations/CursorGlow";
+import { HeroVisuals } from "@/components/animations/HeroVisuals";
 import { GorgeousButton } from "@/components/ui/GorgeousButton";
 import {
   CheckCircle2,
@@ -39,11 +40,11 @@ export async function generateMetadata({
   const service = getServiceBySlug(slug);
 
   if (!service) {
-    return { title: "Service Not Found – Adsoxygen" };
+    return { title: "Service Not Found – AdsMonster" };
   }
 
   return {
-    title: `${service.title} – Adsoxygen`,
+    title: `${service.title} – AdsMonster`,
     description: service.description,
   };
 }
@@ -58,24 +59,24 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
 
   const settings = (await getSiteSettings()) ?? {
     id: 0,
-    siteName: "Adsoxygen",
+    siteName: "AdsMonster",
     tagline: "Power your growth with smart ads",
-    heroHeading: "Hi there, Welcome to Adsoxygen.",
+    heroHeading: "Hi there, Welcome to AdsMonster.",
     heroSubtext:
-      "Adsoxygen is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok Ads and LinkedIn Ads to help brands scale faster and smarter.",
+      "AdsMonster is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok Ads and LinkedIn Ads to help brands scale faster and smarter.",
     ratingValue: "4.8",
     ratingCount: "24k rating",
     yearsExperience: "8+",
     aboutTitle: "About Us",
     aboutText:
-      "Adsoxygen is your growth partner, focused on smart ads that drive real results, attract the right audience, and help your business grow faster.",
+      "AdsMonster is your growth partner, focused on smart ads that drive real results, attract the right audience, and help your business grow faster.",
     whyChooseTitle: "WHY CHOOSE US",
     whyChooseText:
       "We partner with brands to deliver consistent, scalable growth through smart strategy, data-driven execution, and a results-first mindset.",
     ctaTitle: "Ready to Grow Your Business Online?",
     ctaSubtext: "Let's work together to create marketing that actually works.",
     newsletterTitle: "Signup Our Newsletter to Get Update Information.",
-    contactEmail: "hello@adsoxygen.com",
+    contactEmail: "hello@adsmonster.com",
     contactPhone: "+1 (555) 010-2030",
     contactAddress: "123 Growth Avenue, Suite 400, New York, NY",
     facebookUrl: "#",
@@ -86,41 +87,40 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-[#E8F4F4] text-[#5E5E5E]">
+    <main className="min-h-screen bg-[#E2F1F1] text-[#5E5E5E]">
       <CursorGlow />
       <Header siteName={settings.siteName} />
 
       {/* Hero Section with Breadcrumb */}
-      <section className="relative overflow-hidden bg-[#104042] text-white pt-14 pb-20">
-        <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#AEFF1C]/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-[#006402]/20 blur-3xl" />
+      <section className="relative overflow-hidden bg-[#E2F1F1] text-[#104042] pt-28 pb-20 md:pt-32 md:pb-24 lg:pt-36 lg:pb-28">
+        <HeroVisuals />
 
         <div className="relative mx-auto max-w-7xl px-6">
           {/* Breadcrumb Navigation */}
-          <nav className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white/50 mb-6">
-            <Link href="/" className="hover:text-[#AEFF1C] transition">
+          <nav className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#104042]/50 mb-6">
+            <Link href="/" className="hover:text-[#006402] transition">
               Home
             </Link>
             <ChevronRight className="h-3.5 w-3.5" />
-            <Link href="/services" className="hover:text-[#AEFF1C] transition">
+            <Link href="/services" className="hover:text-[#006402] transition">
               Services
             </Link>
             <ChevronRight className="h-3.5 w-3.5" />
-            <span className="text-[#AEFF1C]">{service.title}</span>
+            <span className="text-[#006402]">{service.title}</span>
           </nav>
 
           <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-8">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#AEFF1C]/30 bg-[#AEFF1C]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#AEFF1C] backdrop-blur-md">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#006402]/20 bg-white/90 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#006402] backdrop-blur-md shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 {service.badge}
               </span>
 
-              <h1 className="mt-5 text-4xl font-extrabold text-white sm:text-5xl lg:text-6xl font-display leading-tight">
+              <h1 className="mt-5 text-4xl font-extrabold text-[#104042] sm:text-5xl lg:text-6xl font-display leading-tight">
                 {service.heroTitle}
               </h1>
 
-              <p className="mt-4 text-lg text-white/70 max-w-2xl leading-relaxed">
+              <p className="mt-4 text-lg text-[#5E5E5E] max-w-2xl leading-relaxed">
                 {service.description}
               </p>
 
@@ -149,18 +149,18 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
               {service.metrics.map((metric, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-white/10 bg-[#0c3234]/70 p-5 backdrop-blur-md shadow-lg"
+                  className="rounded-2xl border border-[#104042]/10 bg-white/90 p-5 backdrop-blur-md shadow-lg"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#AEFF1C]">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#006402]">
                       {metric.label}
                     </span>
-                    <TrendingUp className="h-4 w-4 text-[#AEFF1C]" />
+                    <TrendingUp className="h-4 w-4 text-[#006402]" />
                   </div>
-                  <p className="mt-2 text-3xl font-extrabold text-white font-display">
+                  <p className="mt-2 text-3xl font-extrabold text-[#104042] font-display">
                     {metric.value}
                   </p>
-                  <p className="mt-1 text-xs text-white/50">{metric.desc}</p>
+                  <p className="mt-1 text-xs text-[#5E5E5E]">{metric.desc}</p>
                 </div>
               ))}
             </div>
@@ -311,7 +311,7 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
               </div>
             </div>
 
-            {/* Booking / Quick Contact Box matching adsoxygen.com */}
+            {/* Booking / Quick Contact Box */}
             <div className="rounded-3xl border border-[#AEFF1C]/20 bg-[#104042] p-8 text-white shadow-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-[#AEFF1C]/10 blur-2xl pointer-events-none" />
 

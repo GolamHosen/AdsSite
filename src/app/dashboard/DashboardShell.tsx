@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -16,7 +17,6 @@ import {
   LogOut,
   Menu,
   X,
-  Wind,
   ExternalLink,
 } from "lucide-react";
 
@@ -60,17 +60,17 @@ export function DashboardShell({ admin, children }: { admin: Admin; children: Re
           }`}
         >
           <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
-            <div className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#AEFF1C] text-[#104042] shadow-sm">
-                <Wind className="h-5 w-5" />
-              </span>
-              <div className="flex flex-col">
-                <span className="text-base font-extrabold text-white tracking-tight font-display">Adsoxygen</span>
-                <span className="text-[9px] font-bold uppercase tracking-wider text-[#AEFF1C] -mt-1">
-                  Dashboard
-                </span>
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <div className="rounded-xl bg-white px-2.5 py-1.5 shadow-sm">
+                <Image
+                  src="/logo.png"
+                  alt="AdsMonster"
+                  width={140}
+                  height={40}
+                  className="h-8 w-auto object-contain"
+                />
               </div>
-            </div>
+            </Link>
             <button
               className="lg:hidden"
               onClick={() => setSidebarOpen(false)}

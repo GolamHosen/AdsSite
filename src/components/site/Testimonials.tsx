@@ -23,7 +23,7 @@ export function Testimonials({ items }: { items: Testimonial[] }) {
           Trusted by Growth Brands
         </h2>
         <p className="mt-4 text-lg text-[#5E5E5E]">
-          Real founders and marketing leaders sharing their experience scaling with Adsoxygen.
+          Real founders and marketing leaders sharing their experience scaling with AdsMonster.
         </p>
       </motion.div>
 

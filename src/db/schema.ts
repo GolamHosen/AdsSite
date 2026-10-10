@@ -89,22 +89,22 @@ export const rateLimits = pgTable("rate_limits", {
 // ---------------------------------------------------------------------------
 export const siteSettings = pgTable("site_settings", {
   id: serial("id").primaryKey(),
-  siteName: varchar("site_name", { length: 120 }).notNull().default("Adsoxygen"),
+  siteName: varchar("site_name", { length: 120 }).notNull().default("AdsMonster"),
   tagline: varchar("tagline", { length: 240 }).notNull().default(
     "Power your growth with smart ads",
   ),
   heroHeading: varchar("hero_heading", { length: 240 }).notNull().default(
-    "Hi there, Welcome to Adsoxygen.",
+    "Hi there, Welcome to AdsMonster.",
   ),
   heroSubtext: text("hero_subtext").notNull().default(
-    "Adsoxygen is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok Ads and LinkedIn Ads to help brands scale faster and smarter.",
+    "AdsMonster is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok Ads and LinkedIn Ads to help brands scale faster and smarter.",
   ),
   ratingValue: varchar("rating_value", { length: 10 }).notNull().default("4.8"),
   ratingCount: varchar("rating_count", { length: 40 }).notNull().default("24k rating"),
   yearsExperience: varchar("years_experience", { length: 10 }).notNull().default("8+"),
   aboutTitle: varchar("about_title", { length: 160 }).notNull().default("About Us"),
   aboutText: text("about_text").notNull().default(
-    "Adsoxygen is your growth partner, focused on smart ads that drive real results, attract the right audience, and help your business grow faster.",
+    "AdsMonster is your growth partner, focused on smart ads that drive real results, attract the right audience, and help your business grow faster.",
   ),
   whyChooseTitle: varchar("why_choose_title", { length: 160 }).notNull().default(
     "WHY CHOOSE US",
@@ -122,7 +122,7 @@ export const siteSettings = pgTable("site_settings", {
     "Signup Our Newsletter to Get Update Information.",
   ),
   contactEmail: varchar("contact_email", { length: 160 }).notNull().default(
-    "hello@adsoxygen.com",
+    "hello@adsmonster.com",
   ),
   contactPhone: varchar("contact_phone", { length: 40 }).notNull().default(
     "+1 (555) 010-2030",

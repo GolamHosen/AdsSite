@@ -15,7 +15,7 @@ async function main() {
   console.log("Seeding database...");
 
   // --- Admin account -------------------------------------------------
-  const email = (process.env.ADMIN_EMAIL ?? "admin@adsoxygen.com").toLowerCase();
+  const email = (process.env.ADMIN_EMAIL ?? "admin@adsmonster.com").toLowerCase();
   const password = process.env.ADMIN_PASSWORD ?? "ChangeMe!2024Secure";
 
   const existingAdmin = await db.execute(
@@ -176,7 +176,7 @@ async function main() {
         role: "Founder",
         company: "Bloom Skincare",
         content:
-          "Adsoxygen transformed our ad performance. Our ROAS doubled within the first two months of working with them.",
+          "AdsMonster transformed our ad performance. Our ROAS doubled within the first two months of working with them.",
         rating: 5,
         avatarSeed: "Sarah",
         order: 1,

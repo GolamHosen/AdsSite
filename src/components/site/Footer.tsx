@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Wind, ArrowUpRight } from "lucide-react";
+import Image from "next/image";
+import { ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 import type { siteSettings } from "@/db/schema";
 import { FacebookIcon, InstagramIcon, LinkedinIcon, TwitterIcon } from "./SocialIcons";
@@ -27,17 +28,15 @@ export function Footer({ settings }: { settings: Settings }) {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand Info */}
           <div>
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#104042] text-[#AEFF1C] shadow-md border border-white/10 group-hover:scale-105 transition-transform">
-                <Wind className="h-5 w-5" />
-              </span>
-              <div className="flex flex-col">
-                <span className="text-xl font-extrabold text-white font-display tracking-tight">
-                  {settings.siteName}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#AEFF1C] -mt-1">
-                  Performance Ads Agency
-                </span>
+            <Link href="/" className="inline-block group">
+              <div className="flex items-center justify-center rounded-2xl bg-white px-3.5 py-2 shadow-md transition-all group-hover:scale-105">
+                <Image
+                  src="/footer-logo.jpg"
+                  alt={settings.siteName}
+                  width={260}
+                  height={80}
+                  className="h-14 w-auto object-contain"
+                />
               </div>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-white/60">

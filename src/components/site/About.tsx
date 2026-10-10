@@ -26,7 +26,7 @@ export function About({ settings }: { settings: Settings }) {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <span className="inline-flex items-center gap-2 rounded-full bg-[#AEFF1C]/15 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#006402] border border-[#AEFF1C]/30">
-            About Adsoxygen Agency
+            About AdsMonster Agency
           </span>
           <h2 className="mt-4 text-3xl font-extrabold text-[#104042] sm:text-4xl lg:text-5xl font-display leading-tight">
             {settings.aboutTitle}

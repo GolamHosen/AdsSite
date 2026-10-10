@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { siteSettings, stats as statsSchema } from "@/db/schema";
 import { SpringCounter } from "@/components/animations/SpringCounter";
+import { HeroVisuals } from "@/components/animations/HeroVisuals";
 import { GorgeousButton } from "@/components/ui/GorgeousButton";
 
 type Settings = typeof siteSettings.$inferSelect;
@@ -97,10 +98,8 @@ export function AboutPageContent({
   return (
     <>
       {/* ─── Hero Banner ─── */}
-      <section className="relative overflow-hidden bg-[#104042] text-white py-28 text-center">
-        <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#AEFF1C]/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-[#006402]/20 blur-3xl" />
-        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-[#AEFF1C]/5 blur-[120px]" />
+      <section className="relative overflow-hidden bg-[#E2F1F1] text-[#104042] pt-28 pb-20 md:pt-32 md:pb-24 lg:pt-36 lg:pb-28 text-center">
+        <HeroVisuals />
 
         <motion.div
           className="relative mx-auto max-w-4xl px-6"
@@ -108,14 +107,16 @@ export function AboutPageContent({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#AEFF1C]/30 bg-[#AEFF1C]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#AEFF1C]">
-            <Sparkles className="h-3.5 w-3.5" /> About Adsoxygen
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#006402]/20 bg-white/90 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#006402] backdrop-blur-md shadow-sm">
+            <Sparkles className="h-3.5 w-3.5 text-[#006402]" /> About AdsMonster
           </span>
-          <h1 className="mt-6 text-4xl font-extrabold sm:text-5xl lg:text-6xl font-display leading-tight">
+          <h1 className="mt-6 text-4xl font-extrabold sm:text-5xl lg:text-6xl font-display leading-tight text-[#104042]">
             Your Growth Partner in <br className="hidden sm:block" />
-            <span className="text-[#AEFF1C]">Performance Advertising</span>
+            <span className="text-[#006402] relative inline-block underline decoration-[#AEFF1C] decoration-8 underline-offset-4">
+              Performance Advertising
+            </span>
           </h1>
-          <p className="mt-5 text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-5 text-lg text-[#104042]/75 max-w-2xl mx-auto leading-relaxed">
             {settings.aboutText}
           </p>
         </motion.div>
@@ -359,7 +360,7 @@ export function AboutPageContent({
             Ready to Partner with Us?
           </h2>
           <p className="relative mt-4 text-base text-white/70 max-w-xl mx-auto">
-            Let's turn your ad budget into predictable, scalable revenue. Book a free strategy call and see the Adsoxygen difference.
+            Let's turn your ad budget into predictable, scalable revenue. Book a free strategy call and see the AdsMonster difference.
           </p>
           <div className="relative mt-8 flex justify-center">
             <GorgeousButton

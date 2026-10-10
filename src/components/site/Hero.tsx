@@ -36,7 +36,7 @@ export function Hero({ settings }: { settings: Settings }) {
       {/* Anime.js Background Visuals */}
       <HeroVisuals />
 
-      <div className="relative mx-auto grid max-w-7xl gap-12 px-6 pt-20 pb-16 md:grid-cols-12 md:items-center lg:py-28">
+      <div className="relative mx-auto grid max-w-7xl gap-12 px-6 pt-24 md:pt-28 lg:pt-32 pb-16 md:grid-cols-12 md:items-center lg:pb-28">
         {/* Left Column: Headline and CTAs with Framer Motion Stagger */}
         <motion.div
           className="md:col-span-7"

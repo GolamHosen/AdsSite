@@ -5,11 +5,12 @@ import { Header } from "@/components/site/Header";
 import { ContactSection } from "@/components/site/ContactSection";
 import { Footer } from "@/components/site/Footer";
 import { CursorGlow } from "@/components/animations/CursorGlow";
+import { HeroVisuals } from "@/components/animations/HeroVisuals";
 import { Check, Sparkles, ArrowRight, Zap, ShieldCheck } from "lucide-react";
 import { GorgeousButton } from "@/components/ui/GorgeousButton";
 
 export const metadata: Metadata = {
-  title: "Our Pricing – Transparent Performance Packages – Adsoxygen",
+  title: "Our Pricing – Transparent Performance Packages – AdsMonster",
   description:
     "Explore transparent pricing plans for Google, Meta, TikTok, YouTube, and LinkedIn Ads. No long-term lock-in, results-driven scaling.",
 };
@@ -73,24 +74,24 @@ const PRICING_TIERS = [
 export default async function PricingPage() {
   const settings = (await getSiteSettings()) ?? {
     id: 0,
-    siteName: "Adsoxygen",
+    siteName: "AdsMonster",
     tagline: "Power your growth with smart ads",
-    heroHeading: "Hi there, Welcome to Adsoxygen.",
+    heroHeading: "Hi there, Welcome to AdsMonster.",
     heroSubtext:
-      "Adsoxygen is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok Ads and LinkedIn Ads to help brands scale faster and smarter.",
+      "AdsMonster is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok Ads and LinkedIn Ads to help brands scale faster and smarter.",
     ratingValue: "4.8",
     ratingCount: "24k rating",
     yearsExperience: "8+",
     aboutTitle: "About Us",
     aboutText:
-      "Adsoxygen is your growth partner, focused on smart ads that drive real results, attract the right audience, and help your business grow faster.",
+      "AdsMonster is your growth partner, focused on smart ads that drive real results, attract the right audience, and help your business grow faster.",
     whyChooseTitle: "WHY CHOOSE US",
     whyChooseText:
       "We partner with brands to deliver consistent, scalable growth through smart strategy, data-driven execution, and a results-first mindset.",
     ctaTitle: "Ready to Grow Your Business Online?",
     ctaSubtext: "Let's work together to create marketing that actually works.",
     newsletterTitle: "Signup Our Newsletter to Get Update Information.",
-    contactEmail: "hello@adsoxygen.com",
+    contactEmail: "hello@adsmonster.com",
     contactPhone: "+1 (555) 010-2030",
     contactAddress: "123 Growth Avenue, Suite 400, New York, NY",
     facebookUrl: "#",
@@ -101,23 +102,25 @@ export default async function PricingPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#E8F4F4] text-[#5E5E5E]">
+    <main className="min-h-screen bg-[#E2F1F1] text-[#5E5E5E]">
       <CursorGlow />
       <Header siteName={settings.siteName} />
 
       {/* Header Banner */}
-      <section className="relative overflow-hidden bg-[#104042] text-white py-24 text-center">
-        <div className="pointer-events-none absolute -top-20 -left-20 h-80 w-80 rounded-full bg-[#AEFF1C]/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -right-20 h-80 w-80 rounded-full bg-[#006402]/20 blur-3xl" />
+      <section className="relative overflow-hidden bg-[#E2F1F1] text-[#104042] pt-28 pb-20 md:pt-32 md:pb-24 lg:pt-36 lg:pb-28 text-center">
+        <HeroVisuals />
 
         <div className="relative mx-auto max-w-4xl px-6">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#AEFF1C]/30 bg-[#AEFF1C]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#AEFF1C]">
-            <Sparkles className="h-3.5 w-3.5" /> Transparent Pricing
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#006402]/20 bg-white/90 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#006402] backdrop-blur-md shadow-sm">
+            <Sparkles className="h-3.5 w-3.5 text-[#006402]" /> Transparent Pricing
           </span>
-          <h1 className="mt-5 text-4xl font-extrabold sm:text-5xl lg:text-6xl font-display leading-tight">
-            Predictable Investment. Measurable Returns.
+          <h1 className="mt-5 text-4xl font-extrabold sm:text-5xl lg:text-6xl font-display leading-tight text-[#104042]">
+            Predictable Investment.{" "}
+            <span className="text-[#006402] relative inline-block underline decoration-[#AEFF1C] decoration-8 underline-offset-4">
+              Measurable Returns.
+            </span>
           </h1>
-          <p className="mt-4 text-lg text-white/70 max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-[#104042]/75 max-w-2xl mx-auto">
             No hidden fees or long-term lock-ins. Pick the tier that matches your current stage and scale up as revenue flows.
           </p>
         </div>

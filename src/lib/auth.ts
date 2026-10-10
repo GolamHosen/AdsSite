@@ -10,7 +10,7 @@ export const SESSION_COOKIE = "ao_session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 12; // 12 hours
 
 function getSecret() {
-  const secret = process.env.SESSION_SECRET || "adsoxygen-dev-session-secret-change-in-production-32chars";
+  const secret = process.env.SESSION_SECRET || "adsmonster-dev-session-secret-change-in-production-32chars";
   return new TextEncoder().encode(secret);
 }
 

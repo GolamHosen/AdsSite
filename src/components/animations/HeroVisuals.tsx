@@ -62,7 +62,7 @@ export function HeroVisuals() {
       className="pointer-events-none absolute inset-0 overflow-hidden"
       aria-hidden="true"
     >
-      {/* AdsOxygen Neon Lime & Deep Green Floating Glow Orbs */}
+      {/* AdsMonster Neon Lime & Deep Green Floating Glow Orbs */}
       <div
         className="anime-orb absolute -top-24 -left-24 h-96 w-96 rounded-full blur-[100px]"
         style={{ background: "radial-gradient(circle, rgba(174, 255, 28, 0.3) 0%, transparent 70%)" }}
@@ -100,7 +100,7 @@ export function HeroVisuals() {
         ))}
       </div>
 
-      {/* AdsOxygen Concentric Radar Rings */}
+      {/* AdsMonster Concentric Radar Rings */}
       <svg
         className="absolute top-1/2 left-3/4 -translate-x-1/2 -translate-y-1/2 h-[340px] w-[340px] opacity-25 hidden lg:block"
         viewBox="0 0 300 300"

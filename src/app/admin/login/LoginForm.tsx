@@ -56,7 +56,7 @@ export function LoginForm() {
             required
             autoComplete="username"
             className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/30"
-            placeholder="admin@adsoxygen.com"
+            placeholder="admin@adsmonster.com"
           />
         </div>
       </div>

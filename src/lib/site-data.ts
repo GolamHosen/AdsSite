@@ -168,7 +168,7 @@ export const FALLBACK_TESTIMONIALS: (typeof testimonials.$inferSelect)[] = [
     role: "Founder",
     company: "Bloom Skincare",
     content:
-      "Adsoxygen transformed our ad performance. Our ROAS doubled within the first two months of working with them.",
+      "AdsMonster transformed our ad performance. Our ROAS doubled within the first two months of working with them.",
     rating: 5,
     avatarSeed: "Sarah",
     published: true,

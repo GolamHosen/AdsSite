@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Adsoxygen – Power your growth with smart ads",
+  title: "AdsMonster – Power your growth with smart ads",
   description:
-    "Adsoxygen is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok and LinkedIn Ads to help brands scale faster and smarter.",
+    "AdsMonster is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok and LinkedIn Ads to help brands scale faster and smarter.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

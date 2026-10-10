@@ -22,24 +22,24 @@ export const dynamic = "force-dynamic";
 
 const FALLBACK_SETTINGS = {
   id: 0,
-  siteName: "Adsoxygen",
+  siteName: "AdsMonster",
   tagline: "Power your growth with smart ads",
-  heroHeading: "Hi there, Welcome to Adsoxygen.",
+  heroHeading: "Hi there, Welcome to AdsMonster.",
   heroSubtext:
-    "Adsoxygen is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok Ads and LinkedIn Ads to help brands scale faster and smarter.",
+    "AdsMonster is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok Ads and LinkedIn Ads to help brands scale faster and smarter.",
   ratingValue: "4.8",
   ratingCount: "24k rating",
   yearsExperience: "8+",
   aboutTitle: "About Us",
   aboutText:
-    "Adsoxygen is your growth partner, focused on smart ads that drive real results, attract the right audience, and help your business grow faster.",
+    "AdsMonster is your growth partner, focused on smart ads that drive real results, attract the right audience, and help your business grow faster.",
   whyChooseTitle: "WHY CHOOSE US",
   whyChooseText:
     "We partner with brands to deliver consistent, scalable growth through smart strategy, data-driven execution, and a results-first mindset.",
   ctaTitle: "Ready to Grow Your Business Online?",
   ctaSubtext: "Let's work together to create marketing that actually works.",
   newsletterTitle: "Signup Our Newsletter to Get Update Information.",
-  contactEmail: "hello@adsoxygen.com",
+  contactEmail: "hello@adsmonster.com",
   contactPhone: "+1 (555) 010-2030",
   contactAddress: "123 Growth Avenue, Suite 400, New York, NY",
   facebookUrl: "#",
@@ -61,7 +61,7 @@ export default async function HomePage() {
   const resolvedSettings = settings ?? FALLBACK_SETTINGS;
 
   return (
-    <main className="min-h-screen bg-[#E8F4F4] relative">
+    <main className="min-h-screen bg-[#E2F1F1] relative">
       <CursorGlow />
       <Header siteName={resolvedSettings.siteName} />
       <Hero settings={resolvedSettings} />
