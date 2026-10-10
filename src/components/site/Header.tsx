@@ -173,14 +173,14 @@ export function Header({ siteName = "AdsMonster" }: { siteName?: string }) {
               </Link>
 
               <Link
-                href="/#testimonials"
+                href="/testimonials"
                 className="px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-[#104042]/80 hover:text-[#104042] rounded-full transition"
               >
                 Testimonials
               </Link>
 
               <Link
-                href="/#contact"
+                href="/contact"
                 className="px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-[#104042]/80 hover:text-[#104042] rounded-full transition"
               >
                 Contact us
@@ -190,7 +190,7 @@ export function Header({ siteName = "AdsMonster" }: { siteName?: string }) {
             {/* Gorgeous CTA Button */}
             <div className="flex items-center pl-1">
               <GorgeousButton
-                href="/#contact"
+                href="/contact"
                 variant="primary"
                 size="sm"
                 confettiOnClick
@@ -288,7 +288,7 @@ export function Header({ siteName = "AdsMonster" }: { siteName?: string }) {
                 </Link>
 
                 <Link
-                  href="/#testimonials"
+                  href="/testimonials"
                   onClick={() => setOpen(false)}
                   className="rounded-xl px-3 py-2 text-sm font-bold uppercase tracking-wider text-[#104042] hover:bg-[#AEFF1C]/15 transition"
                 >
@@ -296,7 +296,7 @@ export function Header({ siteName = "AdsMonster" }: { siteName?: string }) {
                 </Link>
 
                 <Link
-                  href="/#contact"
+                  href="/contact"
                   onClick={() => setOpen(false)}
                   className="rounded-xl px-3 py-2 text-sm font-bold uppercase tracking-wider text-[#104042] hover:bg-[#AEFF1C]/15 transition"
                 >
@@ -305,7 +305,7 @@ export function Header({ siteName = "AdsMonster" }: { siteName?: string }) {
 
                 <div className="mt-2" onClick={() => setOpen(false)}>
                   <GorgeousButton
-                    href="/#contact"
+                    href="/contact"
                     variant="primary"
                     size="md"
                     className="w-full justify-center"

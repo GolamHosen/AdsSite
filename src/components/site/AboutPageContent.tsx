@@ -9,7 +9,6 @@ import {
   Layers,
   Target,
   Users,
-  Sparkles,
   Heart,
   Zap,
   Eye,
@@ -107,10 +106,7 @@ export function AboutPageContent({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#006402]/20 bg-white/90 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#006402] backdrop-blur-md shadow-sm">
-            <Sparkles className="h-3.5 w-3.5 text-[#006402]" /> About AdsMonster
-          </span>
-          <h1 className="mt-6 text-4xl font-extrabold sm:text-5xl lg:text-6xl font-display leading-tight text-[#104042]">
+          <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl font-display leading-tight text-[#104042]">
             Your Growth Partner in <br className="hidden sm:block" />
             <span className="text-[#006402] relative inline-block underline decoration-[#AEFF1C] decoration-8 underline-offset-4">
               Performance Advertising
@@ -364,7 +360,7 @@ export function AboutPageContent({
           </p>
           <div className="relative mt-8 flex justify-center">
             <GorgeousButton
-              href="/#contact"
+              href="/contact"
               variant="primary"
               size="lg"
               confettiOnClick

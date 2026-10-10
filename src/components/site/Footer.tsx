@@ -70,8 +70,8 @@ export function Footer({ settings }: { settings: Settings }) {
               <li><Link href="/about" className="hover:text-[#AEFF1C] transition">About Us</Link></li>
               <li><Link href="/#why-us" className="hover:text-[#AEFF1C] transition">Why Choose Us</Link></li>
               <li><Link href="/#how-it-works" className="hover:text-[#AEFF1C] transition">How It Works</Link></li>
-              <li><Link href="/#testimonials" className="hover:text-[#AEFF1C] transition">Testimonials</Link></li>
-              <li><Link href="/#contact" className="hover:text-[#AEFF1C] transition">Contact Audit</Link></li>
+              <li><Link href="/testimonials" className="hover:text-[#AEFF1C] transition">Testimonials</Link></li>
+              <li><Link href="/contact" className="hover:text-[#AEFF1C] transition">Contact Us</Link></li>
             </ul>
           </div>
 
@@ -110,7 +110,7 @@ export function Footer({ settings }: { settings: Settings }) {
               <li className="text-white/60 leading-relaxed">{settings.contactAddress}</li>
               <li className="pt-2">
                 <Link
-                  href="/#contact"
+                  href="/contact"
                   className="inline-flex items-center gap-2 rounded-lg bg-[#AEFF1C]/15 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#AEFF1C] border border-[#AEFF1C]/30 hover:bg-[#AEFF1C] hover:text-[#104042] transition"
                 >
                   Request Audit &rarr;

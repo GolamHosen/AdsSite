@@ -7,7 +7,7 @@ import { ContactSection } from "@/components/site/ContactSection";
 import { Footer } from "@/components/site/Footer";
 import { CursorGlow } from "@/components/animations/CursorGlow";
 import { HeroVisuals } from "@/components/animations/HeroVisuals";
-import { ArrowUpRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Our Services – AdsMonster Performance Ads",
@@ -55,10 +55,7 @@ export default async function ServicesOverviewPage() {
         <HeroVisuals />
 
         <div className="relative mx-auto max-w-4xl px-6">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#006402]/20 bg-white/90 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#006402] backdrop-blur-md shadow-sm">
-            <Sparkles className="h-3.5 w-3.5 text-[#006402]" /> Omnichannel Ad Services
-          </span>
-          <h1 className="mt-5 text-4xl font-extrabold sm:text-5xl lg:text-6xl font-display leading-tight text-[#104042]">
+          <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl font-display leading-tight text-[#104042]">
             <span className="text-[#006402] relative inline-block underline decoration-[#AEFF1C] decoration-8 underline-offset-4">
               High-Performance
             </span>{" "}
