@@ -135,3 +135,18 @@ h1, h2, h3, .font-display {
   background-image: radial-gradient(circle, rgba(174, 255, 28, 0.12) 1.5px, transparent 1.5px);
   background-size: 16px 16px;
 }
+
+/* Reduced motion: disable custom animations for a11y */
+@media (prefers-reduced-motion: reduce) {
+  .animate-ping,
+  .animate-pulse,
+  .animate-pulse-slow,
+  .animate-float {
+    animation: none !important;
+  }
+}
+
+/* 3D canvas container pointer passthrough for overlaid UI */
+canvas {
+  touch-action: none;
+}

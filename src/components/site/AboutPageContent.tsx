@@ -14,6 +14,7 @@ import {
   Eye,
   Globe,
   Rocket,
+  type LucideIcon,
 } from "lucide-react";
 import type { siteSettings, stats as statsSchema } from "@/db/schema";
 import { SpringCounter } from "@/components/animations/SpringCounter";
@@ -23,7 +24,7 @@ import { GorgeousButton } from "@/components/ui/GorgeousButton";
 type Settings = typeof siteSettings.$inferSelect;
 type Stat = typeof statsSchema.$inferSelect;
 
-const ICON_MAP: Record<string, React.ElementType> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   Briefcase: Target,
   Smile: Users,
   Award,
