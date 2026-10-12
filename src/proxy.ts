@@ -4,7 +4,7 @@ import { jwtVerify } from "jose";
 const SESSION_COOKIE = "ao_session";
 
 function getSecret() {
-  const secret = process.env.SESSION_SECRET;
+  const secret = process.env.JWT_SECRET || process.env.SESSION_SECRET;
   if (!secret) return null;
   return new TextEncoder().encode(secret);
 }

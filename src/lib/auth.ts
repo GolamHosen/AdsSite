@@ -10,7 +10,15 @@ export const SESSION_COOKIE = "ao_session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 12; // 12 hours
 
 function getSecret() {
-  const secret = process.env.SESSION_SECRET || "adsmonster-dev-session-secret-change-in-production-32chars";
+  const secret =
+    process.env.JWT_SECRET ||
+    process.env.SESSION_SECRET ||
+    "adsmonster-dev-session-secret-change-in-production-32chars";
+  if (process.env.NODE_ENV === "production" && secret.length < 32) {
+    throw new Error(
+      "JWT_SECRET or SESSION_SECRET must be at least 32 characters long in production.",
+    );
+  }
   return new TextEncoder().encode(secret);
 }
 

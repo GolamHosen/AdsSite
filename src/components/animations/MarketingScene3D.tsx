@@ -20,6 +20,21 @@ const PLATFORMS = [
 type Platform = (typeof PLATFORMS)[number];
 
 /* ──────────────────────────────────────────────
+   Shared elapsed time accumulator (avoids THREE.Clock)
+   We accumulate delta values from useFrame instead
+   of calling state.clock.getElapsedTime().
+   ────────────────────────────────────────────── */
+const elapsedRef = { current: 0 };
+
+function ElapsedTimeAccumulator() {
+  useFrame((_state, delta) => {
+    // Cap delta to avoid huge jumps on tab-refocus
+    elapsedRef.current += Math.min(delta, 0.1);
+  });
+  return null;
+}
+
+/* ──────────────────────────────────────────────
    Mouse tracker (lightweight, no re-renders)
    ────────────────────────────────────────────── */
 const mousePos = new THREE.Vector2(0, 0);
@@ -122,9 +137,9 @@ function PlatformIcon({
   const texture = usePlatformTexture(platform);
   const baseAngle = (index / total) * Math.PI * 2;
 
-  useFrame((state) => {
+  useFrame(() => {
     if (!groupRef.current) return;
-    const t = state.clock.getElapsedTime();
+    const t = elapsedRef.current;
     const speed = reducedMotion ? platform.speed * 0.1 : platform.speed;
     const angle = baseAngle + t * speed;
 
@@ -289,6 +304,7 @@ function SceneContent({ reducedMotion }: { reducedMotion: boolean }) {
 
   return (
     <>
+      <ElapsedTimeAccumulator />
       <MouseTracker />
       <CameraRig />
 
@@ -353,9 +369,22 @@ export function MarketingScene3D({ className = "" }: { className?: string }) {
           powerPreference: "high-performance",
         }}
         style={{ background: "transparent" }}
+        onCreated={({ gl }) => {
+          // Suppress THREE.Clock deprecation: replace R3F's internal
+          // clock with the modern THREE.Timer API if available.
+          const renderer = gl as THREE.WebGLRenderer & { _clock?: unknown };
+          if (typeof THREE.Timer === "function") {
+            try {
+              renderer._clock = new THREE.Timer();
+            } catch {
+              // Timer may not be assignable in all R3F versions — safe to ignore
+            }
+          }
+        }}
       >
         <SceneContent reducedMotion={reducedMotion} />
       </Canvas>
     </div>
   );
 }
+

@@ -1,31 +1,28 @@
 import {
-  pgTable,
-  serial,
+  sqliteTable,
   text,
-  varchar,
   integer,
-  boolean,
-  timestamp,
-  pgEnum,
-  jsonb,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/sqlite-core";
 
 // ---------------------------------------------------------------------------
-// Enums
+// Enums & Status Literals
 // ---------------------------------------------------------------------------
-export const adminRoleEnum = pgEnum("admin_role", ["owner", "admin", "editor"]);
-export const leadStatusEnum = pgEnum("lead_status", [
+export const adminRoles = ["owner", "admin", "editor"] as const;
+export type AdminRole = (typeof adminRoles)[number];
+
+export const leadStatuses = [
   "new",
   "contacted",
   "qualified",
   "won",
   "lost",
-]);
-export const subscriberStatusEnum = pgEnum("subscriber_status", [
-  "active",
-  "unsubscribed",
-]);
-export const auditActionEnum = pgEnum("audit_action", [
+] as const;
+export type LeadStatus = (typeof leadStatuses)[number];
+
+export const subscriberStatuses = ["active", "unsubscribed"] as const;
+export type SubscriberStatus = (typeof subscriberStatuses)[number];
+
+export const auditActions = [
   "login_success",
   "login_failed",
   "logout",
@@ -33,177 +30,281 @@ export const auditActionEnum = pgEnum("audit_action", [
   "create",
   "update",
   "delete",
-]);
+] as const;
+export type AuditAction = (typeof auditActions)[number];
 
 // ---------------------------------------------------------------------------
 // Admin / Auth
 // ---------------------------------------------------------------------------
-export const admins = pgTable("admins", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 120 }).notNull(),
-  email: varchar("email", { length: 160 }).notNull().unique(),
+export const admins = sqliteTable("admins", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
-  role: adminRoleEnum("role").notNull().default("admin"),
-  isActive: boolean("is_active").notNull().default(true),
+  role: text("role", { enum: adminRoles }).notNull().default("admin"),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
   failedLoginCount: integer("failed_login_count").notNull().default(0),
-  lockedUntil: timestamp("locked_until", { withTimezone: true }),
-  lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
-  lastLoginIp: varchar("last_login_ip", { length: 64 }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  lockedUntil: integer("locked_until", { mode: "timestamp_ms" }),
+  lastLoginAt: integer("last_login_at", { mode: "timestamp_ms" }),
+  lastLoginIp: text("last_login_ip"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
-export const sessions = pgTable("sessions", {
-  id: serial("id").primaryKey(),
+export const sessions = sqliteTable("sessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   adminId: integer("admin_id")
     .notNull()
     .references(() => admins.id, { onDelete: "cascade" }),
-  tokenHash: varchar("token_hash", { length: 128 }).notNull().unique(),
+  tokenHash: text("token_hash").notNull().unique(),
   userAgent: text("user_agent"),
-  ip: varchar("ip", { length: 64 }),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  ip: text("ip"),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
 });
 
-export const auditLogs = pgTable("audit_logs", {
-  id: serial("id").primaryKey(),
+export const auditLogs = sqliteTable("audit_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   adminId: integer("admin_id").references(() => admins.id, { onDelete: "set null" }),
-  action: auditActionEnum("action").notNull(),
-  entity: varchar("entity", { length: 80 }),
-  entityId: varchar("entity_id", { length: 40 }),
-  ip: varchar("ip", { length: 64 }),
-  metadata: jsonb("metadata"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  action: text("action", { enum: auditActions }).notNull(),
+  entity: text("entity"),
+  entityId: text("entity_id"),
+  ip: text("ip"),
+  metadata: text("metadata", { mode: "json" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
-export const rateLimits = pgTable("rate_limits", {
-  id: serial("id").primaryKey(),
-  bucketKey: varchar("bucket_key", { length: 160 }).notNull(),
+export const rateLimits = sqliteTable("rate_limits", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  bucketKey: text("bucket_key").notNull(),
   count: integer("count").notNull().default(1),
-  windowStart: timestamp("window_start", { withTimezone: true }).notNull().defaultNow(),
+  windowStart: integer("window_start", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
 // ---------------------------------------------------------------------------
 // Public site content
 // ---------------------------------------------------------------------------
-export const siteSettings = pgTable("site_settings", {
-  id: serial("id").primaryKey(),
-  siteName: varchar("site_name", { length: 120 }).notNull().default("AdsMonster"),
-  tagline: varchar("tagline", { length: 240 }).notNull().default(
-    "Power your growth with smart ads",
-  ),
-  heroHeading: varchar("hero_heading", { length: 240 }).notNull().default(
-    "Hi there, Welcome to AdsMonster.",
-  ),
+export const siteSettings = sqliteTable("site_settings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  siteName: text("site_name").notNull().default("AdsMonster"),
+  tagline: text("tagline").notNull().default("Power your growth with smart ads"),
+  heroHeading: text("hero_heading").notNull().default("Hi there, Welcome to AdsMonster."),
   heroSubtext: text("hero_subtext").notNull().default(
     "AdsMonster is a results-driven digital advertising agency specializing in Google, Meta, YouTube, TikTok Ads and LinkedIn Ads to help brands scale faster and smarter.",
   ),
-  ratingValue: varchar("rating_value", { length: 10 }).notNull().default("4.8"),
-  ratingCount: varchar("rating_count", { length: 40 }).notNull().default("24k rating"),
-  yearsExperience: varchar("years_experience", { length: 10 }).notNull().default("8+"),
-  aboutTitle: varchar("about_title", { length: 160 }).notNull().default("About Us"),
+  ratingValue: text("rating_value").notNull().default("4.8"),
+  ratingCount: text("rating_count").notNull().default("24k rating"),
+  yearsExperience: text("years_experience").notNull().default("8+"),
+  aboutTitle: text("about_title").notNull().default("About Us"),
   aboutText: text("about_text").notNull().default(
     "AdsMonster is your growth partner, focused on smart ads that drive real results, attract the right audience, and help your business grow faster.",
   ),
-  whyChooseTitle: varchar("why_choose_title", { length: 160 }).notNull().default(
-    "WHY CHOOSE US",
-  ),
+  whyChooseTitle: text("why_choose_title").notNull().default("WHY CHOOSE US"),
   whyChooseText: text("why_choose_text").notNull().default(
     "We partner with brands to deliver consistent, scalable growth through smart strategy, data-driven execution, and a results-first mindset. Here's what sets us apart and earns our clients' trust.",
   ),
-  ctaTitle: varchar("cta_title", { length: 200 }).notNull().default(
-    "Ready to Grow Your Business Online?",
-  ),
+  ctaTitle: text("cta_title").notNull().default("Ready to Grow Your Business Online?"),
   ctaSubtext: text("cta_subtext").notNull().default(
     "Let's work together to create marketing that actually works.",
   ),
-  newsletterTitle: varchar("newsletter_title", { length: 200 }).notNull().default(
+  newsletterTitle: text("newsletter_title").notNull().default(
     "Signup Our Newsletter to Get Update Information.",
   ),
-  contactEmail: varchar("contact_email", { length: 160 }).notNull().default(
-    "hello@adsmonster.com",
-  ),
-  contactPhone: varchar("contact_phone", { length: 40 }).notNull().default(
-    "+1 (555) 010-2030",
-  ),
-  contactAddress: varchar("contact_address", { length: 240 }).notNull().default(
+  contactEmail: text("contact_email").notNull().default("hello@adsmonster.com"),
+  contactPhone: text("contact_phone").notNull().default("+1 (555) 010-2030"),
+  contactAddress: text("contact_address").notNull().default(
     "123 Growth Avenue, Suite 400, New York, NY",
   ),
-  facebookUrl: varchar("facebook_url", { length: 200 }).notNull().default("#"),
-  instagramUrl: varchar("instagram_url", { length: 200 }).notNull().default("#"),
-  linkedinUrl: varchar("linkedin_url", { length: 200 }).notNull().default("#"),
-  twitterUrl: varchar("twitter_url", { length: 200 }).notNull().default("#"),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  facebookUrl: text("facebook_url").notNull().default("#"),
+  instagramUrl: text("instagram_url").notNull().default("#"),
+  linkedinUrl: text("linkedin_url").notNull().default("#"),
+  twitterUrl: text("twitter_url").notNull().default("#"),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
-export const services = pgTable("services", {
-  id: serial("id").primaryKey(),
-  title: varchar("title", { length: 160 }).notNull(),
-  slug: varchar("slug", { length: 160 }).notNull().unique(),
+export const services = sqliteTable("services", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
   description: text("description").notNull(),
-  icon: varchar("icon", { length: 60 }).notNull().default("Megaphone"),
+  icon: text("icon").notNull().default("Megaphone"),
   order: integer("order").notNull().default(0),
-  published: boolean("published").notNull().default(true),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  published: integer("published", { mode: "boolean" }).notNull().default(true),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
-export const stats = pgTable("stats", {
-  id: serial("id").primaryKey(),
-  label: varchar("label", { length: 120 }).notNull(),
-  value: varchar("value", { length: 40 }).notNull(),
-  description: varchar("description", { length: 240 }).notNull().default(""),
-  icon: varchar("icon", { length: 60 }).notNull().default("TrendingUp"),
+export const stats = sqliteTable("stats", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  label: text("label").notNull(),
+  value: text("value").notNull(),
+  description: text("description").notNull().default(""),
+  icon: text("icon").notNull().default("TrendingUp"),
   order: integer("order").notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
-export const howItWorksSteps = pgTable("how_it_works_steps", {
-  id: serial("id").primaryKey(),
+export const howItWorksSteps = sqliteTable("how_it_works_steps", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   stepNumber: integer("step_number").notNull(),
-  title: varchar("title", { length: 160 }).notNull(),
+  title: text("title").notNull(),
   description: text("description").notNull(),
   order: integer("order").notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
-export const testimonials = pgTable("testimonials", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 120 }).notNull(),
-  role: varchar("role", { length: 160 }).notNull().default(""),
-  company: varchar("company", { length: 160 }).notNull().default(""),
+export const testimonials = sqliteTable("testimonials", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  role: text("role").notNull().default(""),
+  company: text("company").notNull().default(""),
   content: text("content").notNull(),
   rating: integer("rating").notNull().default(5),
-  avatarSeed: varchar("avatar_seed", { length: 60 }).notNull().default("A"),
-  published: boolean("published").notNull().default(true),
+  avatarSeed: text("avatar_seed").notNull().default("A"),
+  published: integer("published", { mode: "boolean" }).notNull().default(true),
   order: integer("order").notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
 // ---------------------------------------------------------------------------
 // Leads / Contact + Newsletter
 // ---------------------------------------------------------------------------
-export const leads = pgTable("leads", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 160 }).notNull(),
-  email: varchar("email", { length: 160 }).notNull(),
-  phone: varchar("phone", { length: 40 }).notNull().default(""),
-  company: varchar("company", { length: 160 }).notNull().default(""),
-  serviceInterest: varchar("service_interest", { length: 160 }).notNull().default(""),
-  budget: varchar("budget", { length: 80 }).notNull().default(""),
+export const leads = sqliteTable("leads", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull().default(""),
+  company: text("company").notNull().default(""),
+  serviceInterest: text("service_interest").notNull().default(""),
+  budget: text("budget").notNull().default(""),
   message: text("message").notNull().default(""),
-  status: leadStatusEnum("status").notNull().default("new"),
-  source: varchar("source", { length: 80 }).notNull().default("website"),
-  ip: varchar("ip", { length: 64 }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  status: text("status", { enum: leadStatuses }).notNull().default("new"),
+  source: text("source").notNull().default("website"),
+  ip: text("ip"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
-export const newsletterSubscribers = pgTable("newsletter_subscribers", {
-  id: serial("id").primaryKey(),
-  email: varchar("email", { length: 160 }).notNull().unique(),
-  status: subscriberStatusEnum("status").notNull().default("active"),
-  ip: varchar("ip", { length: 64 }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const newsletterSubscribers = sqliteTable("newsletter_subscribers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull().unique(),
+  status: text("status", { enum: subscriberStatuses }).notNull().default("active"),
+  ip: text("ip"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
+
+// ---------------------------------------------------------------------------
+// Clients & Package Orders
+// ---------------------------------------------------------------------------
+export const packageOrderStatuses = [
+  "pending_review",
+  "active",
+  "completed",
+  "cancelled",
+] as const;
+export type PackageOrderStatus = (typeof packageOrderStatuses)[number];
+
+export const invoiceStatuses = [
+  "sent",
+  "pending",
+  "paid",
+] as const;
+export type InvoiceStatus = (typeof invoiceStatuses)[number];
+
+export const clients = sqliteTable("clients", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  phone: text("phone").notNull().default(""),
+  company: text("company").notNull().default(""),
+  website: text("website").notNull().default(""),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  lastLoginAt: integer("last_login_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const clientSessions = sqliteTable("client_sessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  clientId: integer("client_id")
+    .notNull()
+    .references(() => clients.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  userAgent: text("user_agent"),
+  ip: text("ip"),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
+});
+
+export const packageOrders = sqliteTable("package_orders", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderNumber: text("order_number").notNull().unique(),
+  clientId: integer("client_id")
+    .notNull()
+    .references(() => clients.id, { onDelete: "cascade" }),
+  packageName: text("package_name").notNull(),
+  packageSlug: text("package_slug").notNull(),
+  price: text("price").notNull(),
+  amount: integer("amount").notNull().default(0),
+  billingCycle: text("billing_cycle").notNull().default("monthly"),
+  adNetworks: text("ad_networks").notNull().default("Google Ads, Meta Ads"),
+  monthlyAdSpend: text("monthly_ad_spend").notNull().default("Up to $10k"),
+  features: text("features", { mode: "json" }),
+  status: text("status", { enum: packageOrderStatuses }).notNull().default("pending_review"),
+  invoiceNumber: text("invoice_number").notNull().unique(),
+  invoiceStatus: text("invoice_status", { enum: invoiceStatuses }).notNull().default("sent"),
+  invoiceSentAt: integer("invoice_sent_at", { mode: "timestamp_ms" }),
+  clientNotes: text("client_notes").notNull().default(""),
+  adminNotes: text("admin_notes").notNull().default(""),
+  billingAddress: text("billing_address").notNull().default(""),
+  taxId: text("tax_id").notNull().default(""),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type Client = typeof clients.$inferSelect;
+export type NewClient = typeof clients.$inferInsert;
+export type PackageOrder = typeof packageOrders.$inferSelect;
+export type NewPackageOrder = typeof packageOrders.$inferInsert;
+

@@ -1,25 +1,43 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+import * as schema from "./schema";
 
-const rawDatabaseUrl = process.env.DATABASE_URL?.trim();
-export const isDatabaseConfigured = Boolean(rawDatabaseUrl && rawDatabaseUrl.length > 0);
+const rawTursoUrl = process.env.TURSO_DATABASE_URL?.trim();
+const rawTursoToken = process.env.TURSO_AUTH_TOKEN?.trim();
 
-// Use configured DATABASE_URL or local fallback placeholder if not set yet
-const databaseUrl = rawDatabaseUrl || "postgresql://postgres:postgres@127.0.0.1:5432/app_db";
+// Database is always configured: either via TURSO_DATABASE_URL (cloud) or local file:local.db fallback.
+// Set to false only when TURSO_DATABASE_URL contains a placeholder value.
+export const isDatabaseConfigured = !(
+  rawTursoUrl && rawTursoUrl.includes("your-db-name")
+);
+
+// In cloud/production: connect to Turso remote url.
+// In local development: connect to Turso URL if set, otherwise fallback to local SQLite file.
+const connectionUrl =
+  rawTursoUrl && rawTursoUrl.length > 0
+    ? rawTursoUrl
+    : "file:local.db";
 
 const globalForDb = globalThis as typeof globalThis & {
-  __arenaNextJsPostgresqlPool?: Pool;
+  __tursoClient?: ReturnType<typeof createClient>;
 };
 
-export const pool =
-  globalForDb.__arenaNextJsPostgresqlPool ??
-  new Pool({
-    connectionString: databaseUrl,
+export const client =
+  globalForDb.__tursoClient ??
+  createClient({
+    url: connectionUrl,
+    authToken: rawTursoToken,
   });
 
 if (process.env.NODE_ENV !== "production") {
-  globalForDb.__arenaNextJsPostgresqlPool = pool;
+  globalForDb.__tursoClient = client;
 }
 
-export const db = drizzle(pool);
+export const db = drizzle(client, { schema });
 
+// Compatibility pool shim for scripts expecting a connection close handle
+export const pool = {
+  end: async () => {
+    client.close();
+  },
+};

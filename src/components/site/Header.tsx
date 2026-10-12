@@ -185,6 +185,13 @@ export function Header({ siteName = "AdsMonster" }: { siteName?: string }) {
               >
                 Contact us
               </Link>
+
+              <Link
+                href="/client/dashboard"
+                className="px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-[#006402] bg-[#AEFF1C]/20 hover:bg-[#AEFF1C]/40 rounded-full transition border border-[#AEFF1C]/50"
+              >
+                Client Portal
+              </Link>
             </nav>
 
             {/* Gorgeous CTA Button */}
@@ -301,6 +308,14 @@ export function Header({ siteName = "AdsMonster" }: { siteName?: string }) {
                   className="rounded-xl px-3 py-2 text-sm font-bold uppercase tracking-wider text-[#104042] hover:bg-[#AEFF1C]/15 transition"
                 >
                   Contact us
+                </Link>
+
+                <Link
+                  href="/client/dashboard"
+                  onClick={() => setOpen(false)}
+                  className="rounded-xl px-3 py-2 text-sm font-bold uppercase tracking-wider text-[#006402] bg-[#AEFF1C]/25 transition border border-[#AEFF1C]/40"
+                >
+                  Client Portal
                 </Link>
 
                 <div className="mt-2" onClick={() => setOpen(false)}>

@@ -1,5 +1,6 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 import { db, pool } from "@/db";
 import {
   admins,
@@ -9,20 +10,21 @@ import {
   testimonials,
   siteSettings,
 } from "@/db/schema";
-import { sql } from "drizzle-orm";
 
 async function main() {
-  console.log("Seeding database...");
+  console.log("Seeding database (Turso / SQLite)...");
 
   // --- Admin account -------------------------------------------------
   const email = (process.env.ADMIN_EMAIL ?? "admin@adsmonster.com").toLowerCase();
   const password = process.env.ADMIN_PASSWORD ?? "ChangeMe!2024Secure";
 
-  const existingAdmin = await db.execute(
-    sql`select id from admins where email = ${email} limit 1`,
-  );
+  const [existingAdmin] = await db
+    .select({ id: admins.id })
+    .from(admins)
+    .where(eq(admins.email, email))
+    .limit(1);
 
-  if (existingAdmin.rows.length === 0) {
+  if (!existingAdmin) {
     const passwordHash = await bcrypt.hash(password, 12);
     await db.insert(admins).values({
       name: "Site Owner",

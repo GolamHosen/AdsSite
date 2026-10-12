@@ -18,6 +18,8 @@ import {
   Menu,
   X,
   ExternalLink,
+  UserCheck,
+  Package,
 } from "lucide-react";
 
 type Admin = {
@@ -29,6 +31,8 @@ type Admin = {
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/clients", label: "Clients", icon: UserCheck },
+  { href: "/dashboard/orders", label: "Package Orders", icon: Package },
   { href: "/dashboard/leads", label: "Leads", icon: Users },
   { href: "/dashboard/newsletter", label: "Newsletter", icon: Mail },
   { href: "/dashboard/services", label: "Services", icon: Briefcase },

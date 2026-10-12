@@ -1,13 +1,14 @@
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { client } from "@/db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await db.execute(sql`select 1`);
-    return Response.json({ ok: true });
-  } catch {
-    return Response.json({ ok: false }, { status: 500 });
+    await client.execute("SELECT 1");
+    return Response.json({ ok: true, status: "healthy" });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Database unreachable";
+    return Response.json({ ok: false, error: message }, { status: 500 });
   }
 }
+

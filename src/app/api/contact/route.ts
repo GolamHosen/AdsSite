@@ -3,6 +3,12 @@ import { db, isDatabaseConfigured } from "@/db";
 import { leads } from "@/db/schema";
 import { leadSchema } from "@/lib/validation";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import {
+  sendLeadNotificationEmail,
+  sendLeadConfirmationEmail,
+} from "@/lib/mail";
+
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request.headers);
@@ -37,34 +43,55 @@ export async function POST(request: NextRequest) {
 
   const { name, email, phone, company, serviceInterest, budget, message } = parsed.data;
 
-  if (!isDatabaseConfigured) {
-    console.log("[Demo Mode] Lead submission received (database not yet configured):", {
+  // 1. Persist to database if database is configured
+  if (isDatabaseConfigured) {
+    try {
+      await db.insert(leads).values({
+        name,
+        email,
+        phone,
+        company,
+        serviceInterest,
+        budget,
+        message,
+        ip,
+        source: "website",
+      });
+    } catch (err) {
+      console.warn("[Contact] Failed to persist lead to database:", err);
+    }
+  } else {
+    console.log("[Demo Mode] Database not yet configured. Processing email notification for lead:", {
       name,
       email,
-      phone,
-      company,
       serviceInterest,
-      budget,
-      message,
     });
-    return NextResponse.json({ ok: true });
   }
 
+  // 2. Dispatch email notification to agency via Nodemailer
+  const leadPayload = {
+    name,
+    email,
+    phone,
+    company,
+    serviceInterest,
+    budget,
+    message,
+    ip,
+  };
+
   try {
-    await db.insert(leads).values({
-      name,
-      email,
-      phone,
-      company,
-      serviceInterest,
-      budget,
-      message,
-      ip,
-      source: "website",
+    // Send email to agency inbox
+    await sendLeadNotificationEmail(leadPayload);
+
+    // Also send confirmation acknowledgement to the client (non-blocking if it fails)
+    sendLeadConfirmationEmail(leadPayload).catch((err) => {
+      console.warn("[Contact] Failed to send client auto-confirmation:", err);
     });
-  } catch (err) {
-    console.warn("[Contact] Failed to persist lead to database:", err);
+  } catch (mailErr) {
+    console.error("[Contact] Unexpected error while sending lead email:", mailErr);
   }
 
   return NextResponse.json({ ok: true });
 }
+
