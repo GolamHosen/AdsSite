@@ -29,6 +29,13 @@
 .env.production.local
 .env.example
 
+# Local SQLite databases
+local.db
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
 # Debug & runtime logs
 logs
 *.log
