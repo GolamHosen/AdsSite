@@ -9,6 +9,8 @@ const updateOrderSchema = z.object({
   status: z.enum(packageOrderStatuses).optional(),
   adminNotes: z.string().optional(),
   invoiceStatus: z.enum(["sent", "pending", "paid"]).optional(),
+  paymentStatus: z.enum(["unpaid", "paid", "failed", "refunded"]).optional(),
+  paymentMethod: z.enum(["stripe", "paypal", "manual_invoice"]).optional(),
 });
 
 export async function PATCH(

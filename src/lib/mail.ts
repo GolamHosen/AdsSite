@@ -909,3 +909,226 @@ export async function sendPackageInvoiceEmail(
   return { adminResult, clientResult };
 }
 
+export interface PaymentConfirmationEmailData {
+  orderNumber: string;
+  invoiceNumber: string;
+  packageName: string;
+  amountPaid: string;
+  paymentMethod: string;
+  transactionId?: string;
+  clientName: string;
+  clientEmail: string;
+  clientCompany?: string;
+  billingCycle?: string;
+  paidAt?: Date;
+}
+
+/**
+ * Sends a rich payment receipt and confirmation email to client and agency team
+ * after Stripe or PayPal checkout successfully completes.
+ */
+export async function sendPaymentConfirmationEmail(
+  data: PaymentConfirmationEmailData,
+): Promise<{ adminResult: MailSendResult; clientResult: MailSendResult }> {
+  const transporter = getMailTransporter();
+
+  if (!transporter) {
+    console.warn(
+      "[Nodemailer] SMTP not configured. Payment confirmation email skipped for:",
+      { order: data.orderNumber, client: data.clientEmail, amount: data.amountPaid },
+    );
+    return {
+      adminResult: { success: false, skipped: true, error: "SMTP is not configured in .env" },
+      clientResult: { success: false, skipped: true, error: "SMTP is not configured in .env" },
+    };
+  }
+
+  const fromEmail =
+    process.env.SMTP_FROM?.trim() ||
+    `"AdsMonster Billing" <${process.env.SMTP_USER?.trim() || "billing@adsmonster.com"}>`;
+
+  const agencyEmail =
+    process.env.CONTACT_RECEIVER_EMAIL?.trim() ||
+    process.env.ADMIN_EMAIL?.trim() ||
+    process.env.SMTP_USER?.trim() ||
+    "hello@adsmonster.com";
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const formattedDate = (data.paidAt || new Date()).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const methodLabel =
+    data.paymentMethod.toLowerCase() === "stripe"
+      ? "Credit / Debit Card (Stripe)"
+      : data.paymentMethod.toLowerCase() === "paypal"
+      ? "PayPal Express Checkout"
+      : "Direct Bank Transfer";
+
+  const safeClientName = escapeHtml(data.clientName);
+  const safeOrderNumber = escapeHtml(data.orderNumber);
+  const safeInvoiceNumber = escapeHtml(data.invoiceNumber);
+  const safePackageName = escapeHtml(data.packageName);
+  const safeAmount = escapeHtml(data.amountPaid);
+  const safeTransactionId = data.transactionId ? escapeHtml(data.transactionId) : "N/A";
+
+  const sharedCss = `
+    body { margin: 0; padding: 0; background-color: #0b2223; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; }
+    .wrapper { width: 100%; padding: 40px 16px; box-sizing: border-box; background: #0b2223; }
+    .card { max-width: 650px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    .header { background: linear-gradient(135deg, #104042 0%, #082627 100%); padding: 36px 32px; text-align: center; color: #ffffff; border-bottom: 3px solid #AEFF1C; }
+    .success-pill { display: inline-block; background: #AEFF1C; color: #104042; font-weight: 800; font-size: 11px; padding: 4px 14px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .content { padding: 36px 32px; background: #ffffff; }
+    .info-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+    .receipt-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+    .receipt-row:last-child { border-bottom: none; }
+    .label { color: #64748b; font-weight: 500; }
+    .val { color: #0f172a; font-weight: 700; text-align: right; }
+    .cta-btn { display: inline-block; background: #104042; color: #AEFF1C !important; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 700; font-size: 14px; margin-top: 16px; }
+    .footer { text-align: center; padding: 24px; font-size: 12px; color: #94a3b8; background: #fafafa; border-top: 1px solid #f1f5f9; }
+  `;
+
+  // Client Receipt HTML
+  const clientHtml = `
+  <!DOCTYPE html>
+  <html>
+  <head><meta charset="utf-8"><style>${sharedCss}</style></head>
+  <body>
+    <div class="wrapper">
+      <div class="card">
+        <div class="header">
+          <span class="success-pill">&#10003; Payment Received & Confirmed</span>
+          <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ffffff;">Payment Receipt</h1>
+          <p style="margin: 8px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.8);">Thank you for partnering with AdsMonster</p>
+        </div>
+        <div class="content">
+          <p style="font-size: 15px; line-height: 1.6; margin-top: 0;">
+            Hi <strong>${safeClientName}</strong>,
+          </p>
+          <p style="font-size: 14px; color: #475569; line-height: 1.6;">
+            We have successfully received your payment for the <strong>${safePackageName}</strong> package. Your campaign onboarding is now active.
+          </p>
+
+          <div class="info-box">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Order Reference:</td>
+                <td style="padding: 6px 0; text-align: right; font-weight: 700; color: #104042;">#${safeOrderNumber}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Invoice Reference:</td>
+                <td style="padding: 6px 0; text-align: right; font-weight: 700; color: #104042;">#${safeInvoiceNumber}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Payment Method:</td>
+                <td style="padding: 6px 0; text-align: right; font-weight: 700; color: #0f172a;">${methodLabel}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Transaction Ref:</td>
+                <td style="padding: 6px 0; text-align: right; font-family: monospace; font-size: 12px; color: #475569;">${safeTransactionId}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Date Paid:</td>
+                <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #0f172a;">${formattedDate}</td>
+              </tr>
+              <tr style="border-top: 2px solid #bbf7d0;">
+                <td style="padding: 10px 0 4px 0; font-size: 15px; font-weight: 800; color: #104042;">Total Amount Paid:</td>
+                <td style="padding: 10px 0 4px 0; text-align: right; font-size: 18px; font-weight: 800; color: #006402;">${safeAmount}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="background: #f8fafc; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
+            <h4 style="margin: 0 0 6px 0; font-size: 14px; color: #104042;">What Happens Next?</h4>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #475569; line-height: 1.6;">
+              <li>Your Dedicated Senior Ad Strategist is preparing your strategy sprint.</li>
+              <li>You can view campaigns, download invoices, and manage settings anytime from your portal.</li>
+            </ul>
+          </div>
+
+          <div style="text-align: center;">
+            <a href="${appUrl}/client/dashboard" class="cta-btn">Access Client Dashboard &rarr;</a>
+          </div>
+        </div>
+        <div class="footer">
+          &copy; ${new Date().getFullYear()} AdsMonster Performance Digital Agency. All rights reserved.
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+
+  // Admin Notification HTML
+  const adminHtml = `
+  <!DOCTYPE html>
+  <html>
+  <head><meta charset="utf-8"><style>${sharedCss}</style></head>
+  <body>
+    <div class="wrapper">
+      <div class="card">
+        <div class="header" style="border-bottom-color: #22c55e;">
+          <span class="success-pill" style="background: #22c55e; color: #ffffff;">New Payment Alert</span>
+          <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #ffffff;">Payment Collected: ${safeAmount}</h1>
+          <p style="margin: 6px 0 0 0; font-size: 13px; color: rgba(255,255,255,0.8);">Client ${safeClientName} has completed payment</p>
+        </div>
+        <div class="content">
+          <p style="font-size: 14px; color: #334155; line-height: 1.6;">
+            A package order has been marked <strong>PAID</strong> via <strong>${methodLabel}</strong>.
+          </p>
+          <div class="info-box">
+            <p style="margin: 4px 0;"><strong>Client:</strong> ${safeClientName} (${escapeHtml(data.clientEmail)})</p>
+            ${data.clientCompany ? `<p style="margin: 4px 0;"><strong>Company:</strong> ${escapeHtml(data.clientCompany)}</p>` : ""}
+            <p style="margin: 4px 0;"><strong>Package:</strong> ${safePackageName}</p>
+            <p style="margin: 4px 0;"><strong>Amount:</strong> ${safeAmount}</p>
+            <p style="margin: 4px 0;"><strong>Order #:</strong> ${safeOrderNumber}</p>
+            <p style="margin: 4px 0;"><strong>Invoice #:</strong> ${safeInvoiceNumber}</p>
+            <p style="margin: 4px 0;"><strong>Transaction ID:</strong> ${safeTransactionId}</p>
+          </div>
+          <div style="text-align: center;">
+            <a href="${appUrl}/dashboard/orders" class="cta-btn">View in Admin Dashboard &rarr;</a>
+          </div>
+        </div>
+        <div class="footer">AdsMonster Internal Notification</div>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+
+  let adminResult: MailSendResult = { success: false };
+  let clientResult: MailSendResult = { success: false };
+
+  // Send to Agency Admin
+  try {
+    const adminInfo = await transporter.sendMail({
+      from: fromEmail,
+      to: agencyEmail,
+      replyTo: data.clientEmail,
+      subject: `[Payment Received] ${safeAmount} from ${safeClientName} - ${safePackageName}`,
+      html: adminHtml,
+    });
+    adminResult = { success: true, messageId: adminInfo.messageId };
+  } catch (error) {
+    adminResult = { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+
+  // Send to Client
+  try {
+    const clientInfo = await transporter.sendMail({
+      from: fromEmail,
+      to: data.clientEmail,
+      subject: `Receipt: Payment confirmed for ${safePackageName} [${safeInvoiceNumber}]`,
+      html: clientHtml,
+    });
+    clientResult = { success: true, messageId: clientInfo.messageId };
+  } catch (error) {
+    clientResult = { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+
+  return { adminResult, clientResult };
+}
+
+

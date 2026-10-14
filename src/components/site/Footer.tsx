@@ -31,7 +31,7 @@ export function Footer({ settings }: { settings: Settings }) {
             <Link href="/" className="inline-block group">
               <div className="flex items-center justify-center rounded-2xl bg-white px-3.5 py-2 shadow-md transition-all group-hover:scale-105">
                 <Image
-                  src="/footer-logo.jpg"
+                  src="/logo.png"
                   alt={settings.siteName}
                   width={260}
                   height={80}

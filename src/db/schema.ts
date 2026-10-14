@@ -240,6 +240,21 @@ export const invoiceStatuses = [
 ] as const;
 export type InvoiceStatus = (typeof invoiceStatuses)[number];
 
+export const paymentStatuses = [
+  "unpaid",
+  "paid",
+  "failed",
+  "refunded",
+] as const;
+export type PaymentStatus = (typeof paymentStatuses)[number];
+
+export const paymentMethods = [
+  "stripe",
+  "paypal",
+  "manual_invoice",
+] as const;
+export type PaymentMethod = (typeof paymentMethods)[number];
+
 export const clients = sqliteTable("clients", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
@@ -291,6 +306,13 @@ export const packageOrders = sqliteTable("package_orders", {
   invoiceNumber: text("invoice_number").notNull().unique(),
   invoiceStatus: text("invoice_status", { enum: invoiceStatuses }).notNull().default("sent"),
   invoiceSentAt: integer("invoice_sent_at", { mode: "timestamp_ms" }),
+  paymentMethod: text("payment_method", { enum: paymentMethods }).notNull().default("manual_invoice"),
+  paymentStatus: text("payment_status", { enum: paymentStatuses }).notNull().default("unpaid"),
+  stripeSessionId: text("stripe_session_id"),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  paypalOrderId: text("paypal_order_id"),
+  paypalCaptureId: text("paypal_capture_id"),
+  paidAt: integer("paid_at", { mode: "timestamp_ms" }),
   clientNotes: text("client_notes").notNull().default(""),
   adminNotes: text("admin_notes").notNull().default(""),
   billingAddress: text("billing_address").notNull().default(""),

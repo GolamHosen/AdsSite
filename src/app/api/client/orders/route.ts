@@ -17,6 +17,7 @@ const createOrderSchema = z.object({
   clientNotes: z.string().optional().default(""),
   billingAddress: z.string().optional().default(""),
   taxId: z.string().optional().default(""),
+  paymentMethod: z.enum(["stripe", "paypal", "manual_invoice"]).optional().default("manual_invoice"),
   phone: z.string().optional(),
   company: z.string().optional(),
 });
@@ -94,6 +95,8 @@ export async function POST(req: Request) {
         status: "pending_review",
         invoiceNumber,
         invoiceStatus: "sent",
+        paymentMethod: data.paymentMethod,
+        paymentStatus: "unpaid",
         clientNotes: data.clientNotes,
         billingAddress: data.billingAddress,
         taxId: data.taxId,

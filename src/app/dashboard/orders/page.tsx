@@ -37,6 +37,13 @@ type Order = {
   invoiceNumber: string;
   invoiceStatus: string;
   invoiceSentAt: string | null;
+  paymentMethod: string;
+  paymentStatus: "unpaid" | "paid" | "failed" | "refunded";
+  stripeSessionId: string | null;
+  stripePaymentIntentId: string | null;
+  paypalOrderId: string | null;
+  paypalCaptureId: string | null;
+  paidAt: string | null;
   clientNotes: string;
   adminNotes: string;
   createdAt: string;
@@ -227,6 +234,19 @@ export default function AdminOrdersPage() {
                         <div className="text-xs text-slate-400 mt-0.5">
                           {order.adNetworks}
                         </div>
+                        <div className="mt-1">
+                          {order.paymentStatus === "paid" ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-[#006402] border border-emerald-300 px-2 py-0.5 text-[11px] font-bold">
+                              <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                              <span>Paid ({order.paymentMethod === "stripe" ? "Stripe" : order.paymentMethod === "paypal" ? "PayPal" : "Invoice"})</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 text-[11px] font-bold">
+                              <Clock className="h-3 w-3 text-rose-500" />
+                              <span>Unpaid ({order.paymentMethod === "stripe" ? "Stripe" : order.paymentMethod === "paypal" ? "PayPal" : "Invoice"})</span>
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Invoice & Order Ref */}
@@ -376,6 +396,40 @@ export default function AdminOrdersPage() {
                     {new Date(selectedOrder.createdAt).toLocaleString()}
                   </span>
                 </div>
+                <div className="flex justify-between border-t border-slate-200 pt-2">
+                  <span className="text-slate-500">Payment Status:</span>
+                  <span className={`font-bold uppercase ${selectedOrder.paymentStatus === "paid" ? "text-emerald-700" : "text-rose-600"}`}>
+                    {selectedOrder.paymentStatus || "unpaid"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Payment Method:</span>
+                  <span className="font-bold text-slate-800 capitalize">{selectedOrder.paymentMethod || "manual_invoice"}</span>
+                </div>
+                {selectedOrder.stripeSessionId && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Stripe Session:</span>
+                    <span className="font-mono text-[11px] text-slate-700 truncate max-w-[200px]" title={selectedOrder.stripeSessionId}>
+                      {selectedOrder.stripeSessionId}
+                    </span>
+                  </div>
+                )}
+                {selectedOrder.paypalOrderId && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">PayPal Order ID:</span>
+                    <span className="font-mono text-[11px] text-slate-700 truncate max-w-[200px]" title={selectedOrder.paypalOrderId}>
+                      {selectedOrder.paypalOrderId}
+                    </span>
+                  </div>
+                )}
+                {selectedOrder.paidAt && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Paid At:</span>
+                    <span className="font-semibold text-emerald-800">
+                      {new Date(selectedOrder.paidAt).toLocaleString()}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {selectedOrder.clientNotes && (

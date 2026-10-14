@@ -1,0 +1,69 @@
+ What You Need To Do
+To start accepting test and real payments, follow these steps:
+
+Step 1: Get Your Stripe Keys
+Create or log in to your account at stripe.com.
+Toggle on Test mode (top right switch).
+Navigate to Developers > API keys (dashboard.stripe.com/test/apikeys).
+Copy:
+Publishable key (pk_test_...)
+Secret key (sk_test_...)
+(Optional for Webhooks) Go to Developers > Webhooks:
+Add endpoint: https://your-domain.com/api/webhooks/stripe (or use the Stripe CLI locally with stripe listen --forward-to localhost:3000/api/webhooks/stripe).
+Select events: checkout.session.completed and payment_intent.succeeded.
+Copy the Signing Secret (whsec_...).
+Step 2: Get Your PayPal Credentials
+Log in to the PayPal Developer Dashboard.
+Navigate to Apps & Credentials and select Sandbox.
+Click Create App (type: Merchant), name it (e.g., AdsMonster Agency).
+Copy:
+Client ID
+Secret
+Under Sandbox > Accounts, you will see auto-generated Personal buyer test accounts with mock money to test payments.
+Step 3: Add the Keys to Your 
+
+.env
+ File
+Open your 
+
+.env
+ file and fill in your keys:
+
+ini
+# ==============================================================================
+# Public Website Application URL
+# ==============================================================================
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+# ==============================================================================
+# Stripe Payment Configuration
+# ==============================================================================
+STRIPE_SECRET_KEY=sk_test_51...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51...
+STRIPE_WEBHOOK_SECRET=whsec_...
+# ==============================================================================
+# PayPal Payment Configuration
+# ==============================================================================
+PAYPAL_MODE=sandbox
+PAYPAL_CLIENT_ID=your_sandbox_client_id
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_sandbox_client_id
+PAYPAL_CLIENT_SECRET=your_sandbox_client_secret
+PAYPAL_WEBHOOK_ID=
+3. How to Test It
+Start your development server:
+bash
+npm run dev
+Open http://localhost:3000/pricing in your browser.
+Select a package (e.g. Growth Starter).
+Choose Stripe Card:
+Test using Stripe's standard test card: 4242 4242 4242 4242, any future expiration date (e.g. 12/28), and any 3-digit CVC (e.g. 123).
+You will be redirected to the success page with a confetti celebration and an activated order in both the client and admin portals.
+Choose PayPal:
+Log in using your PayPal Sandbox buyer account.
+Confirm payment to return to the verified success page.
+4. Going Live (Production Mode)
+When you are ready to take real client payments:
+
+In Stripe: Toggle off test mode, copy your live keys (pk_live_... and sk_live_...), and replace them in your production environment variables.
+In PayPal: Go to your PayPal Developer Dashboard, select Live, create a Live App, copy the live Client ID and Secret, and set:
+ini
+PAYPAL_MODE=live

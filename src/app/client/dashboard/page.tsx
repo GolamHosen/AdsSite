@@ -48,6 +48,11 @@ type Order = {
   invoiceNumber: string;
   invoiceStatus: string;
   invoiceSentAt: string | null;
+  paymentMethod: string;
+  paymentStatus: "unpaid" | "paid" | "failed" | "refunded";
+  stripeSessionId: string | null;
+  paypalOrderId: string | null;
+  paidAt: string | null;
   clientNotes: string;
   createdAt: string;
 };
@@ -89,6 +94,7 @@ export default function ClientDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [activeInvoice, setActiveInvoice] = useState<Order | null>(null);
   const [sendingInvoiceId, setSendingInvoiceId] = useState<number | null>(null);
+  const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -119,6 +125,60 @@ export default function ClientDashboardPage() {
   function showToast(msg: string) {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4000);
+  }
+
+  async function handlePayWithStripe(order: Order) {
+    setPayingOrderId(order.id);
+    try {
+      const res = await fetch("/api/checkout/stripe/create-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: order.id,
+          packageName: order.packageName,
+          packageSlug: order.packageSlug,
+          price: order.price,
+          amount: order.amount,
+          billingCycle: order.billingCycle,
+          adNetworks: order.adNetworks,
+          monthlyAdSpend: order.monthlyAdSpend,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to start Stripe checkout");
+      if (data.url) window.location.href = data.url;
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Error initiating Stripe payment");
+    } finally {
+      setPayingOrderId(null);
+    }
+  }
+
+  async function handlePayWithPayPal(order: Order) {
+    setPayingOrderId(order.id);
+    try {
+      const res = await fetch("/api/checkout/paypal/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: order.id,
+          packageName: order.packageName,
+          packageSlug: order.packageSlug,
+          price: order.price,
+          amount: order.amount,
+          billingCycle: order.billingCycle,
+          adNetworks: order.adNetworks,
+          monthlyAdSpend: order.monthlyAdSpend,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to start PayPal checkout");
+      if (data.approveUrl) window.location.href = data.approveUrl;
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Error initiating PayPal payment");
+    } finally {
+      setPayingOrderId(null);
+    }
   }
 
   async function handleSendInvoice(orderId: number) {
@@ -350,6 +410,18 @@ export default function ClientDashboardPage() {
                           <StatusIcon className="h-3 w-3" />
                           <span>{statusMeta.label}</span>
                         </span>
+
+                        {order.paymentStatus === "paid" ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-[#006402] border border-emerald-300 px-2.5 py-0.5 text-xs font-extrabold">
+                            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                            <span>Paid via {order.paymentMethod === "stripe" ? "Stripe" : order.paymentMethod === "paypal" ? "PayPal" : "Invoice"}</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-0.5 text-xs font-bold">
+                            <AlertCircle className="h-3 w-3 text-rose-500" />
+                            <span>Awaiting Payment</span>
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600">
@@ -377,29 +449,58 @@ export default function ClientDashboardPage() {
                             &bull; Invoice emailed on {new Date(order.invoiceSentAt).toLocaleDateString()}
                           </span>
                         )}
+                        {order.paidAt && (
+                          <span className="ml-2 text-emerald-700 font-bold">
+                            &bull; Paid on {new Date(order.paidAt).toLocaleDateString()}
+                          </span>
+                        )}
                       </p>
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex flex-wrap items-center gap-3 pt-2 lg:pt-0">
+                    <div className="flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
+                      {order.paymentStatus !== "paid" && (
+                        <>
+                          <button
+                            onClick={() => handlePayWithStripe(order)}
+                            disabled={payingOrderId === order.id}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-[#104042] px-3.5 py-2.5 text-xs font-bold text-[#AEFF1C] shadow-sm hover:bg-[#0c2f31] transition disabled:opacity-50 cursor-pointer"
+                            title="Pay instantly with Credit Card, Apple Pay, or Google Pay via Stripe"
+                          >
+                            <CreditCard className="h-3.5 w-3.5" />
+                            <span>{payingOrderId === order.id ? "Loading..." : "Pay with Card"}</span>
+                          </button>
+
+                          <button
+                            onClick={() => handlePayWithPayPal(order)}
+                            disabled={payingOrderId === order.id}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-[#003087] px-3.5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#002568] transition disabled:opacity-50 cursor-pointer"
+                            title="Pay with PayPal"
+                          >
+                            <span className="italic font-extrabold text-[11px]">PP</span>
+                            <span>{payingOrderId === order.id ? "Loading..." : "PayPal"}</span>
+                          </button>
+                        </>
+                      )}
+
                       <button
                         onClick={() => handleSendInvoice(order.id)}
                         disabled={sendingInvoiceId === order.id}
-                        className="inline-flex items-center gap-2 rounded-xl bg-[#104042] px-4 py-2.5 text-xs font-bold text-[#AEFF1C] shadow-sm hover:bg-[#0c2f31] transition disabled:opacity-50 cursor-pointer"
-                        title="Resend this invoice to your email and the agency via Nodemailer"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition disabled:opacity-50 cursor-pointer"
+                        title="Resend invoice to your email"
                       >
-                        <Mail className="h-3.5 w-3.5" />
+                        <Mail className="h-3.5 w-3.5 text-teal-600" />
                         <span>
-                          {sendingInvoiceId === order.id ? "Sending Invoice..." : "Send Invoice to Mail"}
+                          {sendingInvoiceId === order.id ? "Sending..." : "Email Invoice"}
                         </span>
                       </button>
 
                       <button
                         onClick={() => setActiveInvoice(order)}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-[#104042] shadow-sm hover:bg-slate-50 transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-bold text-[#104042] shadow-sm hover:bg-slate-50 transition cursor-pointer"
                       >
                         <FileText className="h-3.5 w-3.5 text-slate-600" />
-                        <span>View / Print Invoice</span>
+                        <span>View / Print</span>
                       </button>
                     </div>
                   </div>

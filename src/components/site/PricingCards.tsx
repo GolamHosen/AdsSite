@@ -124,6 +124,8 @@ export function PricingCards() {
   const [notes, setNotes] = useState("");
   const [phone, setPhone] = useState("");
   const [company, setCompany] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "paypal" | "manual_invoice">("stripe");
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if client is logged in
@@ -154,6 +156,7 @@ export function PricingCards() {
       router.push(`/client/signup?package=${encodeURIComponent(tier.slug)}`);
       return;
     }
+    setCheckoutError(null);
     setSelectedTier(tier);
   }
 
@@ -162,37 +165,75 @@ export function PricingCards() {
     if (!selectedTier || !client) return;
 
     setLoading(true);
+    setCheckoutError(null);
+
+    const payload = {
+      packageName: selectedTier.name,
+      packageSlug: selectedTier.slug,
+      price: `${selectedTier.price}${selectedTier.period}`,
+      amount: selectedTier.amount,
+      billingCycle: "monthly",
+      adNetworks: selectedTier.adNetworks,
+      monthlyAdSpend: selectedTier.monthlyAdSpend,
+      clientNotes: notes,
+      phone,
+      company,
+    };
+
     try {
-      const res = await fetch("/api/client/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      if (paymentMethod === "stripe") {
+        // Stripe Hosted Checkout
+        const res = await fetch("/api/checkout/stripe/create-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to initialize Stripe checkout");
+        }
+        if (data.url) {
+          window.location.href = data.url;
+          return;
+        }
+      } else if (paymentMethod === "paypal") {
+        // PayPal Orders v2 Checkout
+        const res = await fetch("/api/checkout/paypal/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to initialize PayPal order");
+        }
+        if (data.approveUrl) {
+          window.location.href = data.approveUrl;
+          return;
+        }
+      } else {
+        // Manual Invoice request
+        const res = await fetch("/api/client/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...payload, paymentMethod: "manual_invoice" }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to process package purchase");
+        }
+
+        setSuccessOrder({
+          orderNumber: data.order.orderNumber,
+          invoiceNumber: data.order.invoiceNumber,
           packageName: selectedTier.name,
-          packageSlug: selectedTier.slug,
-          price: `${selectedTier.price}${selectedTier.period}`,
-          amount: selectedTier.amount,
-          billingCycle: "monthly",
-          adNetworks: selectedTier.adNetworks,
-          monthlyAdSpend: selectedTier.monthlyAdSpend,
-          clientNotes: notes,
-          phone,
-          company,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to process package purchase");
+        });
+        setSelectedTier(null);
       }
-
-      setSuccessOrder({
-        orderNumber: data.order.orderNumber,
-        invoiceNumber: data.order.invoiceNumber,
-        packageName: selectedTier.name,
-      });
-      setSelectedTier(null);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error placing order");
+      const msg = err instanceof Error ? err.message : "Error processing checkout";
+      setCheckoutError(msg);
     } finally {
       setLoading(false);
     }
@@ -402,6 +443,77 @@ export function PricingCards() {
                 />
               </div>
 
+              {/* Payment Method Selector */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#104042] mb-2">
+                  Select Payment Method
+                </label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentMethod("stripe");
+                      setCheckoutError(null);
+                    }}
+                    className={`flex flex-col items-center justify-center rounded-2xl p-3 border text-center transition cursor-pointer ${
+                      paymentMethod === "stripe"
+                        ? "border-[#104042] bg-[#104042]/5 text-[#104042] font-bold shadow-sm ring-2 ring-[#104042]/20"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    <CreditCard className="h-5 w-5 mb-1 text-[#104042]" />
+                    <span className="text-xs font-bold">Stripe Card</span>
+                    <span className="text-[10px] text-slate-400 mt-0.5">Cards / Apple Pay</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentMethod("paypal");
+                      setCheckoutError(null);
+                    }}
+                    className={`flex flex-col items-center justify-center rounded-2xl p-3 border text-center transition cursor-pointer ${
+                      paymentMethod === "paypal"
+                        ? "border-[#003087] bg-blue-50/50 text-[#003087] font-bold shadow-sm ring-2 ring-blue-500/20"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="font-extrabold text-sm text-[#003087] italic tracking-tight mb-1">
+                      Pay<span className="text-[#0079C1]">Pal</span>
+                    </div>
+                    <span className="text-xs font-bold">PayPal</span>
+                    <span className="text-[10px] text-slate-400 mt-0.5">Account / Credit</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentMethod("manual_invoice");
+                      setCheckoutError(null);
+                    }}
+                    className={`flex flex-col items-center justify-center rounded-2xl p-3 border text-center transition cursor-pointer ${
+                      paymentMethod === "manual_invoice"
+                        ? "border-[#104042] bg-[#104042]/5 text-[#104042] font-bold shadow-sm ring-2 ring-[#104042]/20"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    <FileText className="h-5 w-5 mb-1 text-slate-700" />
+                    <span className="text-xs font-bold">Bank Invoice</span>
+                    <span className="text-[10px] text-slate-400 mt-0.5">Wire Transfer</span>
+                  </button>
+                </div>
+              </div>
+
+              {checkoutError && (
+                <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 flex items-start gap-2">
+                  <div className="h-2 w-2 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                  <div>
+                    <strong className="block font-bold">Payment Configuration Notice</strong>
+                    <span>{checkoutError}</span>
+                  </div>
+                </div>
+              )}
+
               <div className="pt-2">
                 <button
                   type="submit"
@@ -409,19 +521,36 @@ export function PricingCards() {
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#104042] py-3.5 px-6 font-bold text-sm text-[#AEFF1C] shadow-lg hover:bg-[#0c2f31] transition disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
-                    <span>Generating & Sending Invoice...</span>
+                    <span>Processing Secure Checkout...</span>
+                  ) : paymentMethod === "stripe" ? (
+                    <>
+                      <span>Pay {selectedTier.price} with Stripe</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  ) : paymentMethod === "paypal" ? (
+                    <>
+                      <span>Pay {selectedTier.price} with PayPal</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </>
                   ) : (
                     <>
-                      <span>Confirm Order & Send Invoice</span>
+                      <span>Generate & Send Bank Invoice</span>
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
                 </button>
               </div>
 
-              <p className="text-center text-xs text-slate-400">
-                A copy will be automatically emailed to you and recorded in your Client Dashboard.
-              </p>
+              <div className="flex items-center justify-center gap-4 text-[11px] text-slate-400">
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#006402]" />
+                  SSL Encrypted
+                </span>
+                <span>&bull;</span>
+                <span>Cancel Anytime</span>
+                <span>&bull;</span>
+                <span>Instant Confirmation</span>
+              </div>
             </form>
           </div>
         </div>
